@@ -1,0 +1,48 @@
+version: '2.29.2'
+
+services:
+  mysql:
+    container_name: xrpl-db
+    image: mysql
+    ports:
+      - 3334:3306
+    networks:
+      - xrpl-network
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+  xrpl-wallet:
+    container_name: xrpl-wallet
+    image: xrpl-wallet:1.0.0
+    ports:
+      - 3333:3333
+    environment:
+      - PORT=3333
+      - HOST=0.0.0.0
+      - NODE_ENV=development
+      - APP_KEY=vzrvC3X9tFgaRx0i-u9waSL1tVZMY3cU
+      - DRIVE_DISK=local
+      - DB_CONNECTION=mysql
+      - XRPL_ADDRESS=wss://s.altnet.rippletest.net:51233
+      - DB_HOST=localhost
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=
+      - MYSQL_DB_NAME=xrpl-wallet
+    depends_on:
+      - mysql
+  xrpl-client:
+    container_name: xrpl-client
+    image: xrpl-client:1.0.0
+    ports:
+      - 3332:3000
+    depends_on:
+      - xrpl-wallet
+    environment:
+      - REACT_APP_SERVER_URL=http://xrpl-wallet:3333
+      - WDS_SOCKET_PORT=3332
+    networks:
+      - xrpl-network
+
+networks:
+  xrpl-network:
+    name: xrpl-network
