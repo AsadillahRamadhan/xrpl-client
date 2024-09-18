@@ -18,15 +18,22 @@ export default function Container({data}){
     const [ledgerIndex, setLedgerIndex] = useState('');
     const [historyModalData, setHistoryModalData] = useState([]);
 
-    const changeValue = (d) => {
+    const changeValue = async (d) => {
         setCredTitle(d.title);
         setPublicKey(d.public_key);
         setPrivateKey(d.private_key);
         setAddress(d.address);
         setCredSeed(d.seed);
-        setBalance(`${d.balance} XRP`);
         setLedgerHash(d.ledger_hash);
         setLedgerIndex(d.ledger_index);
+        setBalance('Loading...');
+        try {
+            const res = await axios.get(`${process.env.REACT_APP_SERVER_URL}/get-balance/${d.id}`);
+            const balance = res.data.balance;
+            setBalance(`${balance} XRP`);
+        } catch (e) {
+            setBalance("Cannot get balance!");
+        }
     }
 
     const setSendXrpModal = (d) => {
@@ -68,7 +75,7 @@ export default function Container({data}){
                                 <div className="card mb-2 me-2"  style={{ width: '17rem' }}>
                                     <div className="card-body">
                                         <h5 className="card-title">{d.title}</h5>
-                                        <h6 className="card-subtitle mb-2 text-body-secondary">{d.balance} XRP</h6>
+                                        <h6 className="card-subtitle mb-3 text-body-secondary"><small style={{ fontSize: '10px' }}>{d.address}</small></h6>
                                         <button className="btn btn-primary btn-sm me-2" onClick={() => getHistory(d.id)} data-bs-toggle="modal" data-bs-target="#historyModal">History</button>
                                         <button className="btn btn-success btn-sm me-2" onClick={() => setSendXrpModal(d)}  data-bs-toggle="modal" data-bs-target="#sendXrpModal">Send XRP</button>
                                         <button className="btn btn-info btn-sm" onClick={() => changeValue(d)} data-bs-toggle="modal" data-bs-target="#detailsModal">Details</button>
